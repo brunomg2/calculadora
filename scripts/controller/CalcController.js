@@ -50,25 +50,61 @@ class CalcController {
         this._operation[this._operation.length - 1] = value
     }
 
+    pushOperation(value) {
+        this._operation.push(value)
+        if (this._operation.length > 3) {
+            this.calc()
+        }
+    }
+
+    calc() {
+        const lastOperation = this._operation.pop()
+        const result = eval(this._operation.join(""))
+        this._operation = [result, lastOperation]
+        this.setLastNumberToDisplay()
+        
+    }
+    
+    setLastNumberToDisplay() {
+        let lastNumber
+        for(let i = this._operation.length -1; i >= 0; i-- ) {
+            if(!this.isOperator(this._operation[i])) {
+                lastNumber = this._operation[i]
+                break  
+            }
+        }
+
+        this.displayCalc = lastNumber
+    }
+
     addOperation(value) {
 
         if (isNaN(this.getLastOperation())) {
+
             if (this.isOperator(value)) {
+
                 this.setLastOperation(value)
+
             } else if (isNaN(value)) {
 
-                console.log(value)
+                console.log('outra coisa')
             } else {
-                this._operation.push(value)
+                this.pushOperation(value)
+                this.setLastNumberToDisplay()
             }
         } else {
-            let newValue = this.getLastOperation().toString() + value.toString()
-            this.setLastOperation(parseInt(newValue))
+
+            if (this.isOperator(value)) {
+
+                this.pushOperation(value)
+            } else {
+                const newValue = this.getLastOperation().toString() + value.toString()
+                this.setLastOperation(parseInt(newValue))
+
+                this.setLastNumberToDisplay()
+            }
+
         }
-
-        console.log(this._operation)
-
-
     }
 
     executeButton(value) {
@@ -92,7 +128,7 @@ class CalcController {
             case 'multiplicacao':
                 this.addOperation('*')
                 break
-                
+
             case 'divisao':
                 this.addOperation('/')
                 break
