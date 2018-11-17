@@ -17,6 +17,8 @@ class CalcController {
         setInterval(() => {
             this.setDisplayDateTime()
         }, 1000)
+
+        this.setLastNumberToDisplay()
     }
 
     addEventListenerAll(element, events, callback) {
@@ -27,10 +29,12 @@ class CalcController {
 
     clearAll() {
         this._operation = []
+        this.setLastNumberToDisplay()
     }
 
     clearEntry() {
         this._operation.pop()
+        this.setLastNumberToDisplay()
     }
 
     setError() {
@@ -52,15 +56,31 @@ class CalcController {
 
     pushOperation(value) {
         this._operation.push(value)
+
         if (this._operation.length > 3) {
             this.calc()
         }
     }
 
     calc() {
-        const lastOperation = this._operation.pop()
-        const result = eval(this._operation.join(""))
-        this._operation = [result, lastOperation]
+        let lastOperation = ''
+        
+        if(this._operation.length > 3) {
+            lastOperation = this._operation.pop()
+        }
+        
+        let result = eval(this._operation.join(""))
+
+        if(lastOperation == '%') {
+
+            result /= 100
+            this._operation = [result]
+        } else {
+
+            this._operation = [result]
+            if(lastOperation) this._operation.push(lastOperation)
+        }
+        
         this.setLastNumberToDisplay()
         
     }
@@ -73,7 +93,7 @@ class CalcController {
                 break  
             }
         }
-
+        if(!lastNumber) lastNumber = 0
         this.displayCalc = lastNumber
     }
 
@@ -95,7 +115,7 @@ class CalcController {
         } else {
 
             if (this.isOperator(value)) {
-
+                
                 this.pushOperation(value)
             } else {
                 const newValue = this.getLastOperation().toString() + value.toString()
@@ -138,7 +158,7 @@ class CalcController {
                 break
 
             case 'igual':
-
+                this.calc()
                 break
             case 'ponto':
                 this.addOperation('.')
