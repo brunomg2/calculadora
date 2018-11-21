@@ -1,6 +1,8 @@
 class CalcController {
 
     constructor() {
+        this._audio = new Audio('click.mp3')
+        this._audioOnOff = false
         this._lastOperator = ''
         this._lastNumber = ''
         this._operation = []
@@ -11,6 +13,25 @@ class CalcController {
         this._currentData
         this.initialize()
         this.initButtonsEvents()
+        this.initKeyboard()
+    }
+
+    pasteFromClipboard() {
+        document.addEventListener('paste', event => {
+            const text = event.clipboardData.getData('Text')
+            const textCopy = parseFloat(text)
+            this.pushOperation(textCopy)
+            this.displayCalc = textCopy
+        })
+    }
+
+    copyToClipboard() {
+        const input = document.createElement('input')
+        input.value = this.displayCalc
+        document.body.appendChild(input)
+        input.select()
+        document.execCommand('Copy')
+        input.remove()
     }
 
     initialize() {
@@ -21,6 +42,74 @@ class CalcController {
         }, 1000)
 
         this.setLastNumberToDisplay()
+        this.pasteFromClipboard()
+
+        document.querySelectorAll('.btn-ac').forEach(btn => {
+            btn.addEventListener('dblclick', event => {
+                this.toggleAudio()
+            })
+        })
+    }
+
+    toggleAudio() {
+        this._audioOnOff = !this._audioOnOff
+    }
+
+    playAudio() {
+        if(this._audioOnOff) {
+            this._audio.currentTime = 0
+            this._audio.play()
+        }
+    }
+
+    initKeyboard() {
+        document.addEventListener('keyup', event => {
+            this.playAudio()
+
+            switch (event.key) {
+                case 'Escape':
+                    this.clearAll()
+                    break
+
+                case 'Backspace':
+                    this.clearEntry()
+                    break
+
+                case '+':
+                case '-':
+                case '*':
+                case '/':
+                case '%':
+                    this.addOperation(event.key)
+                    break
+
+                case 'Enter':
+                case '=':
+                    this.calc()
+                    break
+                case '.':
+                case ',':
+                    this.addDot()
+                    break
+                case '0':
+                case '1':
+                case '2':
+                case '3':
+                case '4':
+                case '5':
+                case '6':
+                case '7':
+                case '8':
+                case '9':
+                    this.addOperation(parseInt(event.key))
+                    break
+                case 'c':
+                    if (event.ctrlKey)
+                        this.copyToClipboard()
+                    break
+            }
+
+        })
     }
 
     addEventListenerAll(element, events, callback) {
@@ -116,7 +205,7 @@ class CalcController {
             }
         }
 
-        if (!lastItem) {
+        if (!lastItem && lastItem !== 0) {
 
             lastItem = (isOperator) ? this._lastOperator : this._lastNumber
         }
@@ -157,9 +246,9 @@ class CalcController {
 
     addDot() {
         const lastOperation = this.getLastOperation()
-        if (typeof lastOperation === 'string' && lastOperation.split(''.indexOf('.')) > -1) return
+        if (typeof lastOperation == 'string' && lastOperation.split(''.indexOf('.')) > -1) return
 
-        if (this.isOperator(lastOperation) || !lastOperation) {
+        if (this.isOperator(lastOperation) || lastOperation == undefined) {
             this.pushOperation('0.')
         } else {
             this.setLastOperation(lastOperation.toString() + '.')
@@ -169,6 +258,8 @@ class CalcController {
     }
 
     executeButton(value) {
+        this.playAudio()
+
         switch (value) {
             case 'ac':
                 this.clearAll()
@@ -204,11 +295,6 @@ class CalcController {
             case 'ponto':
                 this.addDot()
                 break
-
-            default:
-                this.setError()
-                break
-
             case '0':
             case '1':
             case '2':
@@ -220,6 +306,9 @@ class CalcController {
             case '8':
             case '9':
                 this.addOperation(parseInt(value))
+                break
+            default:
+                this.setError()
                 break
         }
     }
