@@ -56,7 +56,7 @@ class CalcController {
     }
 
     playAudio() {
-        if(this._audioOnOff) {
+        if (this._audioOnOff) {
             this._audio.currentTime = 0
             this._audio.play()
         }
@@ -156,7 +156,13 @@ class CalcController {
     }
 
     getResult() {
-        return eval(this._operation.join(""))
+        try {
+            return eval(this._operation.join(""))
+        }catch(e) {
+            setTimeout(()=> {
+                this.setError()
+            }, 1)
+        }
     }
 
     calc() {
@@ -346,6 +352,7 @@ class CalcController {
     }
 
     set displayDate(value) {
+
         return this._dateEl.innerHTML = value
     }
 
@@ -354,6 +361,10 @@ class CalcController {
     }
 
     set displayCalc(value) {
+        if (value.toString().length > 10) {
+            this.setError()
+            return false
+        }
         this._displayCalcEl.innerHTML = value
     }
 
