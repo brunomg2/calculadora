@@ -158,8 +158,8 @@ class CalcController {
     getResult() {
         try {
             return eval(this._operation.join(""))
-        }catch(e) {
-            setTimeout(()=> {
+        } catch (e) {
+            setTimeout(() => {
                 this.setError()
             }, 1)
         }
@@ -241,10 +241,17 @@ class CalcController {
 
                 this.pushOperation(value)
             } else {
-                const newValue = this.getLastOperation().toString() + value.toString()
-                this.setLastOperation(newValue)
+                let newValue;
 
-                this.setLastNumberToDisplay()
+                if (this.getLastOperation().toString() !== '0') {
+                    newValue = this.getLastOperation().toString() + value.toString();
+                } else {
+                    newValue = value.toString();
+                }
+
+                this.setLastOperation(newValue);
+
+                this.setLastNumberToDisplay();
             }
 
         }
